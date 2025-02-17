@@ -29,7 +29,10 @@ install.packages(c("tidyverse", "ggplot2", "data.table", "Biostrings", "Seurat")
 ```
 
 
+📄 Reference Paper
+This repo is created for the research paper below:
 
+Oguzhan Begik, Gregor Diensthuber,Ivana Borovska,John S Mattick,Danny Incarnato,Eva Maria Novoa. "Long-read transcriptome-wide RNA structure maps using DMS-FIRST-seq" Under Review
 
 
 
