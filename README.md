@@ -17,12 +17,7 @@ cd RNA-Nanopore-Analysis
 
 Ensure R and required packages are installed. We use renv for reproducibility.
 
-```R
-install.packages("renv")
-renv::restore()  # Install all required packages
-```
-
-Alternatively, install key dependencies manually:
+Install key dependencies manually:
 
 ```R
 install.packages(c("tidyverse", "ggplot2", "data.table", "Biostrings", "Seurat"))
@@ -38,12 +33,11 @@ Oguzhan Begik, Gregor Diensthuber,Ivana Borovska,John S Mattick,Danny Incarnato,
 
 
 ### 📜 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License
 
 
 ### 📧 Contact
-For questions, reach out to:
-📩 oguzhanbegik@gmail.com
+For questions, please open an issue
 🔬 Novoa Lab / Centre for Genomic Regulation
 
 
