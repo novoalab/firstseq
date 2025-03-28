@@ -1,0 +1,7 @@
+# Ignore output & temp files
+*.log
+*.tmp
+*.out
+*.DS_Store
+data/stats/*
+results/*
