@@ -3,5 +3,3 @@
 *.tmp
 *.out
 *.DS_Store
-data/stats/*
-results/*
