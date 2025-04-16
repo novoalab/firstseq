@@ -39,7 +39,7 @@ process_count <- function(input, enzyme,buffer) {
 }
 
 #Mg
-protoscript_mg.cnt <- process_count("/chrcount/FIRST_Mg_PS2.chrcount.tsv", "PS2","Mg")
+protoscript_mg.cnt <- process_count("data/chrcount/FIRST_Mg_PS2.chrcount.tsv", "PS2","Mg")
 ss2_mg.cnt <- process_count("data/chrcount/FIRST_Mg_SS2.chrcount.tsv", "SS2","Mg")
 ss3_mg.cnt <- process_count("data/chrcount/FIRST_Mg_SS3.chrcount.tsv", "SS3","Mg")
 ss4_mg.cnt <- process_count("data/chrcount/FIRST_Mg_SS4.chrcount.tsv", "SS4","Mg")
