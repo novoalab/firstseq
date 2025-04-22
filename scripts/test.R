@@ -105,31 +105,95 @@ process_func <- function(stats_path, readends_path, enzyme, buffer) {
 }
 
 # ---------------------------
-# PART 2: Plotting Functions
+# PART 2: Run Analysis
 # ---------------------------
 
-# Mismatch Barplot
-mismatch_profile_barplot_facet <- function(data, label) {
-  base_colors <- c("A" = "#1fab89", "T" = "#eb4d55", "C" = "#1e56a0", "G" = "#f0cf85")
-  ref_color   <- "#888888"
+all_data <- list()
+for (e in enzymes) {
+  for (b in buffers) {
+    stat_path <- file.path(data_dir, "stats", paste0("FIRST_", b, "_", e, ".STATS"))
+    readend_path <- file.path(data_dir, "readends", paste0("FIRST_", b, "_", e, ".readends.tsv"))
+    if (file.exists(stat_path) && file.exists(readend_path)) {
+      df <- process_func(stat_path, readend_path, enzyme = e, buffer = b)
+      all_data[[paste(e, b, sep = "_")]] <- df
+    }
+  }
+}
 
+data_combined <- bind_rows(all_data) %>% filter(!is.na(Enzyme))
+
+# Normalize norm_cov individually per Enzyme/Buffer
+library(forcats)
+data_combined <- data_combined %>%
+  group_by(Enzyme, Buffer, chr) %>%
+  mutate(norm_cov = norm_cov / max(norm_cov, na.rm = TRUE)) %>%
+  ungroup()
+
+# Palette
+enzyme_palette <- c(
+  "PS2" = "#aa6f73", "SS2" = "#eea990", "SS3" = "#f6e0b5", "SS4" = "#D193C1",
+  "Maxima" = "#9C8CC3", "TGIRT" = "#5294a3", "Induro" = "#a3d9d9", "Marathon" = "#60bfae"
+)
+
+# Faceted RT coverage plot (one per Buffer)
+plot_area_coverage_facet <- function(data, label, palette) {
+  for (chro in c("18s_rRNA", "25s_rRNA")) {
+    subs <- subset(data, chr == chro)
+    subs$pos <- subs$pos - 14
+    subs$position <- paste(subs$chr, subs$pos, sep = "_")
+    subs$Group <- interaction(subs$Enzyme, subs$Buffer)
+
+    pdf(file = file.path(output_dir, paste0(chro, "_", label, "_coverage_facet.pdf")), height = 10, width = 7)
+    print(
+      ggplot(subs, aes(x = pos, y = norm_cov, color = Group)) +
+        geom_line() +
+        geom_area(aes(fill = Group, group = Group), alpha = 1/3, position = "identity") +
+        theme_classic() +
+        scale_fill_manual(values = rep(palette, each = 2)) +
+        scale_color_manual(values = rep(palette, each = 2)) +
+        geom_vline(data = subset(subs, position %in% c("18s_rRNA_1191", "25s_rRNA_645", "25s_rRNA_2142", "25s_rRNA_2634", "25s_rRNA_2843")),
+                   aes(xintercept = pos), linetype = "dashed") +
+        facet_wrap(~Enzyme, nrow = length(unique(subs$Enzyme)))
+    )
+    dev.off()
+  }
+}
+
+# Generate plots separately for Mg and Mn
+plot_area_coverage_facet(subset(data_combined, Buffer == "Mg"), "Various_Enzymes_Mg", enzyme_palette)
+plot_area_coverage_facet(subset(data_combined, Buffer == "Mn"), "Various_Enzymes_Mn", enzyme_palette)
+
+# ---------------------------
+# PART 3: Mismatch Barplots and Dotplots
+# ---------------------------
+
+# Mismatch frequency aggregation
+clean_mis_input_agg <- function(data) {
   data <- data %>% filter(ref_nuc %in% c("A", "T", "C", "G")) %>%
     mutate(sum = A + T + C + G,
            A = A / sum, T = T / sum, C = C / sum, G = G / sum)
 
-  agg <- aggregate(data[, c("A", "T", "C", "G")],
-                   by = list(Mod = data$Mod, ref_base = data$ref_nuc, Enzyme = data$Enzyme, Buffer = data$Buffer),
-                   FUN = mean, na.rm = TRUE)
+  data_avg <- aggregate(data[, c("A", "T", "C", "G")],
+                        by = list(Mod = data$Mod, ref_base = data$ref_nuc, Enzyme = data$Enzyme, Buffer = data$Buffer),
+                        FUN = mean, na.rm = TRUE)
 
-  data_long <- pivot_longer(agg, cols = c("A", "T", "C", "G"), names_to = "base", values_to = "value") %>%
+  return(data_avg)
+}
+
+# Barplot
+mismatch_profile_barplot_facet <- function(data, label) {
+  base_colors <- c("A" = "#1fab89", "T" = "#eb4d55", "C" = "#1e56a0", "G" = "#f0cf85")
+  ref_color   <- "#888888"
+
+  data_long <- pivot_longer(data, cols = c("A", "T", "C", "G"), names_to = "base", values_to = "value") %>%
     filter(Mod %in% order_mods) %>%
     mutate(
       fill = ifelse(base == ref_base, "ref", base),
       fill = factor(fill, levels = c("A", "T", "C", "G", "ref")),
-      Mod  = factor(Mod, levels = order_mods)
+      Mod = factor(Mod, levels = order_mods)
     )
 
-  pdf(file = file.path(output_dir, paste0(label, "_mismatch_profile_barplot.pdf")), height = 10, width = 12)
+  pdf(file = file.path(output_dir, paste0(label, "_mismatch_profile_barplot.pdf")), height = 6, width = 8)
   print(
     ggplot(data_long, aes(x = Mod, y = value, fill = fill)) +
       geom_col(position = "stack", colour = "black") +
@@ -146,7 +210,7 @@ plot_dotplot <- function(data, label) {
   data <- data %>% filter(Mod %in% order_mods)
   data$Mod <- factor(data$Mod, levels = order_mods)
 
-  pdf(file = file.path(output_dir, paste0(label, "_Dotplot.pdf")), height = 3, width = 25)
+  pdf(file = file.path(output_dir, paste0(label, "_Dotplot.pdf")), height = 3, width = 15)
   print(
     ggplot(data, aes(x = interaction(Enzyme, Buffer), y = mis_freq, color = Buffer)) +
       geom_quasirandom(varwidth = TRUE, alpha = 0.6) +
@@ -158,45 +222,9 @@ plot_dotplot <- function(data, label) {
   dev.off()
 }
 
-# Coverage Line Plot
-plot_coverage <- function(data) {
-  data <- data %>%
-    group_by(Enzyme, Buffer, chr) %>%
-    mutate(norm_cov = coverage / max(coverage, na.rm = TRUE)) %>%
-    ungroup()
-
-  for (chro in c("18s_rRNA", "25s_rRNA")) {
-    subs <- subset(data, chr == chro)
-    subs$pos <- subs$pos - 14
-    subs$position <- paste(subs$chr, subs$pos, sep = "_")
-    pdf(file = file.path(output_dir, paste0(chro, "_Coverage_Plot.pdf")), height = 10, width = 10)
-    print(
-      ggplot(subs, aes(x = pos, y = norm_cov, color = interaction(Enzyme, Buffer))) +
-        geom_line() +
-        theme_classic() +
-        facet_wrap(~ Enzyme, scales = "free_x") +
-        theme(legend.position = "bottom")
-    )
-    dev.off()
-  }
-}
-
-# Run analysis
-all_data <- list()
-for (e in enzymes) {
-  for (b in buffers) {
-    stat_path <- file.path(data_dir, "stats", paste0("FIRST_", b, "_", e, ".STATS"))
-    readend_path <- file.path(data_dir, "readends", paste0("FIRST_", b, "_", e, ".readends.tsv"))
-    if (file.exists(stat_path) && file.exists(readend_path)) {
-      df <- process_func(stat_path, readend_path, enzyme = e, buffer = b)
-      all_data[[paste(e, b, sep = "_")]] <- df
-    }
-  }
-}
-
-data_combined <- bind_rows(all_data) %>% filter(!is.na(Enzyme))
-
-# Run plots
-mismatch_profile_barplot_facet(data_combined, "Various_Enzymes")
+# Compute and plot
+mis_agg <- clean_mis_input_agg(data_combined)
+mismatch_profile_barplot_facet(mis_agg, "Various_Enzymes")
 plot_dotplot(data_combined, "Various_Enzymes")
-plot_coverage(data_combined)
+
+
