@@ -2,10 +2,10 @@
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)  
 ![R](https://img.shields.io/badge/Made%20with-R-blue)
 
-## 🧬 Project Overview  
+## Project Overview  
 This repository contains the code, data, and manuscript for our study on **FIRST-seq**. Our approach leverages **customised nanopore direct cDNA sequencing** to investigate reverse transcriptase fingerprints and determine RNA secondary structures in long read sequencing reads. 
 
-## 🛠 Installation  
+## Installation  
 ###  **Clone this repository** 
 
 ```bash
@@ -24,21 +24,22 @@ install.packages(c("tidyverse", "ggplot2", "data.table", "Biostrings", "Seurat")
 ```
 
 
-### 📄 Reference Paper
+### Reference Paper
 
 This repo is created for the research paper below:
 
-Oguzhan Begik, Gregor Diensthuber,Ivana Borovska,John S Mattick,Danny Incarnato,Eva Maria Novoa. "Long-read transcriptome-wide RNA structure maps using DMS-FIRST-seq" Under Review
+Oguzhan Begik, Gregor Diensthuber,Ivana Borovska,John S Mattick,Danny Incarnato,Eva Maria Novoa. "FIRST-seq: a nanopore-based cDNA sequencing platform for RNA modification and structure profiling
+" Under Review
 
 
 
-### 📜 License
+### License
 This project is licensed under the MIT License
 
 
-### 📧 Contact
+### Contact
 For questions, please open an issue
-🔬 Novoa Lab / Centre for Genomic Regulation
+Novoa Lab / Centre for Genomic Regulation
 
 
 
