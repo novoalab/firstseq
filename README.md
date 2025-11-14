@@ -23,6 +23,14 @@ Install key dependencies manually:
 install.packages(c("tidyverse", "ggplot2", "data.table", "Biostrings", "Seurat"))
 ```
 
+Ensure the required libraries are installed in python. 
+
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
 
 ### Reference Paper
 
