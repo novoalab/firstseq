@@ -46,7 +46,7 @@ This project is licensed under the MIT License
 
 
 ### Contact
-For questions, please open an issue here[https://github.com/novoalab/firstseq/issues].
+For questions, please open an issue [here](https://github.com/novoalab/firstseq/issues).
 
 
 
