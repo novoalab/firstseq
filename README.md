@@ -46,8 +46,8 @@ This project is licensed under the MIT License
 
 
 ### Contact
-For questions, please open an issue
-Novoa Lab / Centre for Genomic Regulation
+For questions, please open an issue here[https://github.com/novoalab/firstseq/issues].
+
 
 
 
